@@ -8,6 +8,7 @@ variable avail_zone {}
 variable env_prefix {}
 variable my_ip {}
 variable instance_type {}
+variable public_key_location {}
 
 resource "aws_vpc" "myapp-vpc" {
     cidr_block = var.vpc_cidr_block
@@ -100,24 +101,38 @@ resource "aws_instance" "my_app_server" {
     vpc_security_group_ids = [aws_security_group.myapp-sg.id]
     availability_zone = var.avail_zone
     associate_public_ip_address = true
-    key_name = "M1 Air RSA"
+    #key_name = "M1 Air RSA" # This works but the following is better:
+    key_name = aws_key_pair.ssh-key.key_name
 
     tags = {
         Name: "${var.env_prefix}-server"
     }
 }
 
+resource "aws_key_pair" "ssh-key" {
+    key_name = "server_key"
+    #public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDiSaTHCAKe8cx2SyUChI5c5dL3Bs/UmJ3Lz5/myHAZfE+9vXdkPh+kbJWIwK8q8lJxoGf8+qKVgBaU9MenUy9Z/u6HAaZLkjnJbMaZixynltwTheV3BHnOyenhJ2l8NtiCYQVazBfUP0XDjL1CnHFeo/nZxaGc9wsbAqU0VOcy6yrOwsXSjop9rB9GWgTm01us+HUXlr2lW9dvMosczS2hvBlVVfd40/OnyG1yZuYQ5ZIpF7gZJxaIAu/Xxm946Nse0lx/pQnAbxRmveIhn+g4QfZly450l7VS6XVkb/Rhze+ch9DbEg/6WUpp3x2xwP6NknDl+nZ9c5ALJoIAFU/QmMVMtdVgFiX2phBQMfXLQ4D6TE4PUR4T0Dp4QHKJnXr3BWBtoUjL2KGlDqKYi9BDK+vgINrHqhgLGmb7pxYGdCG+eOu97rw6HZtkP+iO9w9gYS/b+Jzrx0gsy6f7tmPLmjtd5pLEEt1oRdq7pvzKAi+EpKTwB9xpv0bm0bWwkOJBN729vgBFTq9MZMPeFyK4If8mc0wm039ySDPHPuJJwDpq2qsUFGeH4lvigqhXt4fPG7kFz4QrXttr2weRh6Hkbmsi4kXKb0Zt29XybR5QI5qleH4m8KrzJik6WS4rQHe/BIgRZFdpq3C8Nsy44so5Uox2NwCqp5sg54LzbrOUrQ== nwclassic@gmail.com"
+    public_key = file(var.public_key_location)
+}
+
 
 /* This will output the id of the AMI that will be used */
-output "aws_ami_id" {
+output "aws_EC2_ami_id" {
     value = data.aws_ami.latest_amazon_linux_image.id
 }
-/* This will output the instance_type of the AMI that will be used */
-output "aws_ami_instance_type" {
+/* This will output the instance_type of the EC2 instance */
+output "aws_EC2_instance_type" {
     value = aws_instance.my_app_server.instance_type
 }
-/* This will output the instance_id of the AMI that will be used */
-output "aws_ami_instance_id" {
+/* This will output the instance_id of the EC2 instance */
+output "aws_EC2_instance_id" {
     value = aws_instance.my_app_server.id
 }
-
+/* This will output the public_ip_address of the EC2 instance */
+output "aws_EC2_instance_public_ip" {
+    value = aws_instance.my_app_server.public_ip
+}
+/* This will output the private_ip_address of the EC2 instance */
+output "aws_EC2_instance_private_ip" {
+    value = aws_instance.my_app_server.private_ip
+}
