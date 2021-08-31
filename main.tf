@@ -94,8 +94,17 @@ data "aws_ami" "latest_amazon_linux_image" {
 
 resource "aws_instance" "my_app_server" {
     ami = data.aws_ami.latest_amazon_linux_image.id
-    #instance_type = "t2.micro"
+    #instance_type = "t2.micro" Note: better way on the next line below.
     instance_type = var.instance_type
+    subnet_id = aws_subnet.myapp-subnet-1.id
+    vpc_security_group_ids = [aws_security_group.myapp-sg.id]
+    availability_zone = var.avail_zone
+    associate_public_ip_address = true
+    key_name = "M1 Air RSA"
+
+    tags = {
+        Name: "${var.env_prefix}-server"
+    }
 }
 
 
@@ -103,9 +112,12 @@ resource "aws_instance" "my_app_server" {
 output "aws_ami_id" {
     value = data.aws_ami.latest_amazon_linux_image.id
 }
-
 /* This will output the instance_type of the AMI that will be used */
 output "aws_ami_instance_type" {
     value = aws_instance.my_app_server.instance_type
+}
+/* This will output the instance_id of the AMI that will be used */
+output "aws_ami_instance_id" {
+    value = aws_instance.my_app_server.id
 }
 
