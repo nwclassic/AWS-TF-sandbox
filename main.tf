@@ -7,6 +7,7 @@ variable subnet_cidr_block {}
 variable avail_zone {}
 variable env_prefix {}
 variable my_ip {}
+variable instance_type {}
 
 resource "aws_vpc" "myapp-vpc" {
     cidr_block = var.vpc_cidr_block
@@ -76,5 +77,35 @@ resource "aws_security_group" "myapp-sg" {
     tags = {
         Name: "${var.env_prefix}-sg"
     }
+}
+
+data "aws_ami" "latest_amazon_linux_image" {
+    most_recent = "true"
+    owners = ["amazon"]
+    filter {
+        name = "name"
+        values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+    }
+    filter {
+        name = "virtualization-type"
+        values = ["hvm"]
+    }
+}
+
+resource "aws_instance" "my_app_server" {
+    ami = data.aws_ami.latest_amazon_linux_image.id
+    #instance_type = "t2.micro"
+    instance_type = var.instance_type
+}
+
+
+/* This will output the id of the AMI that will be used */
+output "aws_ami_id" {
+    value = data.aws_ami.latest_amazon_linux_image.id
+}
+
+/* This will output the instance_type of the AMI that will be used */
+output "aws_ami_instance_type" {
+    value = aws_instance.my_app_server.instance_type
 }
 
