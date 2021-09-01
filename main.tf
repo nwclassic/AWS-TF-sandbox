@@ -9,6 +9,7 @@ variable env_prefix {}
 variable my_ip {}
 variable instance_type {}
 variable public_key_location {}
+variable private_key_location {}
 
 resource "aws_vpc" "myapp-vpc" {
     cidr_block = var.vpc_cidr_block
@@ -104,14 +105,27 @@ resource "aws_instance" "my_app_server" {
     #key_name = "M1 Air RSA" # This pulls the key from AWS that has been uploaded manually, it works but the following is better:
     key_name = aws_key_pair.ssh-key.key_name
 
-    user_data = <<EOF
-                    #!/bin/bash
-                    sudo yum update -y && sudo yum install -y docker
-                    sudo systemctl start docker
-                    # adds ec2-user to docker group
-                    sudo usermod -aG docker ec2-user
-                    docker run -p 8080:80 nginx
-                EOF
+    # This will run a shell script from a file by passing it to AWS and AWS WILL RUN IT :
+    #user_data = file("entry-script.sh")
+
+    # Connection is required by provisioner as an explicit defintion of how to connect.
+    # self refers to the resource we are in, the aws_instance.
+    connection {
+        type = "ssh"
+        host = self.public_ip
+        user = "ec2-user"
+        private_key = file(var.private_key_location)
+    }
+
+    # A provisioner invokes a script on a remote resource after it is created.
+    # This is an alternative to running a shell script
+    provisioner "remote-exec" {
+        inline = [
+        "export ENV=dev",
+        "mkdir newdir"
+        ]
+    }
+
 
     tags = {
         Name: "${var.env_prefix}-server"
