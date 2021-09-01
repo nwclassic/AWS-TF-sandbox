@@ -104,6 +104,7 @@ resource "aws_instance" "my_app_server" {
     #key_name = "M1 Air RSA" # This pulls the key from AWS that has been uploaded manually, it works but the following is better:
     key_name = aws_key_pair.ssh-key.key_name
 
+    #The following will run shell commands directly from TF, but there is not feedbaCK
     user_data = <<EOF
                     #!/bin/bash
                     sudo yum update -y && sudo yum install -y docker
