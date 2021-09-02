@@ -142,7 +142,7 @@ resource "aws_instance" "my_app_server" {
         private_key = file(var.private_key_location)
     }
     ########################################################
-    ### Provisioner #1
+    ### Provisioner #1 - REMOTE-EXEC, with local scrips
     ########################################################
 
     # A provisioner in TF uses SSH to connect to an instance and then invokes a script.
@@ -156,7 +156,7 @@ resource "aws_instance" "my_app_server" {
  #   }
 
     ########################################################
-    ### Provisioner #2
+    ### Provisioner #2 - REMOTE-EXEC, with remote scripts
     ########################################################
     // copy the .sh file to the remote hose
      provisioner "file" {
@@ -174,6 +174,15 @@ resource "aws_instance" "my_app_server" {
             "/home/ec2-user/entry-script-on-ec2.sh"
         ]
     }
+    ########################################################
+    ### Provisioner #3 - LOCAL-EXEC
+    ########################################################
+    // involves a local executatble after a resource is created
+    // locally! NOT on the created resource!
+    provisioner "local-exec" {
+        command = "echo ${self.public_ip} > output.txt"
+    }
+
 ########################################################
     tags = {
         Name: "${var.env_prefix}-server"
