@@ -9,6 +9,7 @@ variable env_prefix {}
 variable my_ip {}
 variable instance_type {}
 variable public_key_location {}
+variable private_key_location {}
 
 resource "aws_vpc" "myapp-vpc" {
     cidr_block = var.vpc_cidr_block
@@ -22,7 +23,7 @@ resource "aws_subnet" "myapp-subnet-1" {
     cidr_block = var.subnet_cidr_block
     availability_zone = var.avail_zone
     tags = {
-        Name: "${var.env_prefix}-subnet-1"      
+        Name: "${var.env_prefix}-subnet-1"
     }
 }
 
@@ -101,8 +102,90 @@ resource "aws_instance" "my_app_server" {
     vpc_security_group_ids = [aws_security_group.myapp-sg.id]
     availability_zone = var.avail_zone
     associate_public_ip_address = true
-    #key_name = "M1 Air RSA" # This works but the following is better:
+    #key_name = "M1 Air RSA" # This pulls the key from AWS that has been uploaded manually, it works but the following is better:
     key_name = aws_key_pair.ssh-key.key_name
+#########################################################
+    # 1 of 3 ways to configure an instance...
+    # The following will run shell commands directly from TF, but there is not feedback
+<<<<<<< HEAD
+    # user-data passes the commends to AWS and AWS executes them
+=======
+>>>>>>> master
+    #user_data = <<EOF
+    #                		#!/bin/bash
+    #               		sudo yum update -y && sudo yum install -y docker
+    #                		sudo systemctl start docker
+    #                		# adds ec2-user to docker group
+    #                		sudo usermod -aG docker ec2-user
+    #                		docker run -p 8080:80 nginx
+    #			  EOF
+#########################################################
+    # 2 of 3 ways to configure instance...
+<<<<<<< HEAD
+    # This will run a shell script from a file by passing it to AWS and again AWS WILL RUN IT for you.
+    #user_data = file("entry-script.sh")
+#########################################################
+    # 3 of 3 ways to configure an instance... Provisioner.
+    # There are 3 types of provisioners:
+        # 1. remote-exec with inline (script runs locally)
+        # 2. remote-exec with script on ec2 server nd USE the provisioner "file to put the sript there first
+        # 3.
+    # Connection is required by provisioners as an explicit definition of how to connect via ssh.
+    # self refers to the resource we are in, in this case, the aws_instance.my_app_server
+=======
+    # This will run a shell script from a file by passing it to AWS and AWS WILL RUN IT for you.
+    #user_data = file("entry-script.sh")
+#########################################################
+    # 3 of 3 ways to configure an instance...
+    # Connection is required by provisioner as an explicit definition of how to connect.
+    # self refers to the resource we are in, the aws_instance.my_app_server
+>>>>>>> master
+    connection {
+        type = "ssh"
+        host = self.public_ip
+        user = "ec2-user"
+        private_key = file(var.private_key_location)
+    }
+<<<<<<< HEAD
+    ########################################################
+    ### Provisioner #1
+    ########################################################
+
+    # A provisioner in TF uses SSH to connect to an instance and then invokes a script.
+=======
+    # A provisioner invokes a script on a remote resource after it is created.
+>>>>>>> master
+    # This is an alternative to running a shell script
+ #   provisioner "remote-exec" {
+ #       inline = [
+ #       "export ENV=dev",
+ #       "mkdir newdir"
+ #       ]
+ #   }
+
+    ########################################################
+    ### Provisioner #2
+    ########################################################
+    // copy the .sh file to the remote hose
+     provisioner "file" {
+         source = "entry-script.sh"
+         destination = "/home/ec2-user/entry-script-on-ec2.sh"
+     }
+    // remember that remote-exec will run this directly on the EC2 host so it must exist there!
+    // The provisioner "file" will copy the file to the remote host for you
+    // first change permissions to executable, then make a dir, and run script remotely
+    // Note: docker run -d is required to make the docker image launch in EC2, i think... :-)
+    provisioner "remote-exec" {
+        inline = [
+            "chmod +x /home/ec2-user/entry-script-on-ec2.sh",
+            "mkdir newdir",
+            "/home/ec2-user/entry-script-on-ec2.sh"
+        ]
+    }
+<<<<<<< HEAD
+=======
+########################################################
+>>>>>>> master
 
     tags = {
         Name: "${var.env_prefix}-server"
