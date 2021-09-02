@@ -107,10 +107,8 @@ resource "aws_instance" "my_app_server" {
 #########################################################
     # 1 of 3 ways to configure an instance...
     # The following will run shell commands directly from TF, but there is not feedback
-<<<<<<< HEAD
+
     # user-data passes the commends to AWS and AWS executes them
-=======
->>>>>>> master
     #user_data = <<EOF
     #                		#!/bin/bash
     #               		sudo yum update -y && sudo yum install -y docker
@@ -121,7 +119,6 @@ resource "aws_instance" "my_app_server" {
     #			  EOF
 #########################################################
     # 2 of 3 ways to configure instance...
-<<<<<<< HEAD
     # This will run a shell script from a file by passing it to AWS and again AWS WILL RUN IT for you.
     #user_data = file("entry-script.sh")
 #########################################################
@@ -139,22 +136,18 @@ resource "aws_instance" "my_app_server" {
     # 3 of 3 ways to configure an instance...
     # Connection is required by provisioner as an explicit definition of how to connect.
     # self refers to the resource we are in, the aws_instance.my_app_server
->>>>>>> master
     connection {
         type = "ssh"
         host = self.public_ip
         user = "ec2-user"
         private_key = file(var.private_key_location)
     }
-<<<<<<< HEAD
     ########################################################
     ### Provisioner #1
     ########################################################
 
     # A provisioner in TF uses SSH to connect to an instance and then invokes a script.
-=======
     # A provisioner invokes a script on a remote resource after it is created.
->>>>>>> master
     # This is an alternative to running a shell script
  #   provisioner "remote-exec" {
  #       inline = [
@@ -182,10 +175,7 @@ resource "aws_instance" "my_app_server" {
             "/home/ec2-user/entry-script-on-ec2.sh"
         ]
     }
-<<<<<<< HEAD
-=======
 ########################################################
->>>>>>> master
 
     tags = {
         Name: "${var.env_prefix}-server"
