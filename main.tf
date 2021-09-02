@@ -129,7 +129,6 @@ resource "aws_instance" "my_app_server" {
         # 3.
     # Connection is required by provisioners as an explicit definition of how to connect via ssh.
     # self refers to the resource we are in, in this case, the aws_instance.my_app_server
-=======
     # This will run a shell script from a file by passing it to AWS and AWS WILL RUN IT for you.
     #user_data = file("entry-script.sh")
 #########################################################
@@ -176,7 +175,6 @@ resource "aws_instance" "my_app_server" {
         ]
     }
 ########################################################
-
     tags = {
         Name: "${var.env_prefix}-server"
     }
